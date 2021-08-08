@@ -46,15 +46,31 @@ def generate_sentences(
 
 tokenizer, model = initialize("rinna/japanese-gpt2-medium")
 
+st.sidebar.subheader("Parameters")
+max_gen_seq_len = st.sidebar.number_input(
+    "Generated sequence max length", value=100, step=10
+)
+temp = st.sidebar.slider("Temperature for decoding", 0.5, 1.5, 1.0, 0.1)
+top_k = st.sidebar.slider("Top k", 0, 2, 0, 1)
+top_p = st.sidebar.slider("Top p", 0.5, 1.0, 0.9, 0.01)
 
 st.title("日本語文章生成")
+num_return_sequences = st.slider("生成する文章の数", 1, 5, 3, 1)
 
 input_text = st.text_input("日本語テキストを入力してください（続きを生成します）")
 input_text = input_text.rstrip()
 if input_text:
     freeze_seed()
     input_ids = tokenizer.encode(input_text, return_tensors="pt")
-    output_sequences = generate_sentences(model, input_text)
+    output_sequences = generate_sentences(
+        model,
+        input_text,
+        length=max_gen_seq_len,
+        temperature=temp,
+        k=top_k,
+        p=top_p,
+        num_return_sequences=num_return_sequences,
+    )
 
     for idx, sequence in enumerate(output_sequences):
         st.subheader(f"=== GENERATED SEQUENCE {idx + 1} ===")
